@@ -1,4 +1,4 @@
-*# TEAM2005 Dockerfile build & run instructions
+# TEAM2005 Dockerfile build & run instructions
 
 ## Building
 
