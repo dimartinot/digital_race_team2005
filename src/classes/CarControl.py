@@ -37,6 +37,14 @@ class CarControl():
         self.steer_publisher = rospy.Publisher("/team2005/set_angle", std_msgs.msg.Float32, queue_size=10)
         self.speed_publisher = rospy.Publisher("/team2005/set_speed", std_msgs.msg.Float32, queue_size=10)
 
+        self.stay_left = False # indicates if the car has to stay on the left of the road
+
+    def set_stay_left(self):
+        self.stay_left = True
+
+    def unset_stay_left(self):
+        self.stay_left = False
+
     def errorAngle(self, dst):
         (dst_x, dst_y) = (dst[0], dst[1])
         (carPos_x, carPos_y) = self.carPos.pt
@@ -67,7 +75,11 @@ class CarControl():
                     return
 
             if (left[i] != None and right[i] != None):
-                error = self.errorAngle((np.array(left[i]) + np.array(right[i])) / 2)
+                #error = self.errorAngle((np.array(left[i]) + np.array(right[i])) / 2)
+                if (self.stay_left):
+                    error = self.errorAngle(3*np.array(left[i]) / 5 + 2*np.array(right[i])/5)
+                else:
+                    error = self.errorAngle(2*np.array(left[i]) / 5 + 3*np.array(right[i])/5)
 
             elif left[i] != None:
                 error = self.errorAngle(np.array(left[i]) + np.array([laneWidth / 2, 0]));
