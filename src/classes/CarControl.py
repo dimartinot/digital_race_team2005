@@ -84,9 +84,9 @@ class CarControl():
             if (left[i] != None and right[i] != None):
                 #error = self.errorAngle((np.array(left[i]) + np.array(right[i])) / 2)
                 if (self.stay_left):
-                    error = self.errorAngle(3*np.array(left[i]) / 5 + 2*np.array(right[i])/5)
+                    error = self.errorAngle(3.5*np.array(left[i]) / 5 + 1.5*np.array(right[i])/5)
                 else:
-                    error = self.errorAngle(2*np.array(left[i]) / 5 + 3*np.array(right[i])/5)
+                    error = self.errorAngle(1.5*np.array(left[i]) / 5 + 3.5*np.array(right[i])/5)
 
             elif left[i] != None:
                 error = self.errorAngle(np.array(left[i]) + np.array([laneWidth / 2, 0]));
