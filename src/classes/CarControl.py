@@ -89,7 +89,7 @@ class CarControl():
                     error = self.errorAngle(1.5*np.array(left[i]) / 5 + 3.5*np.array(right[i])/5)
 
             elif left[i] != None:
-                error = self.errorAngle(np.array(left[i]) + np.array([laneWidth / 2, 0]));
+                error = self.errorAngle(np.array(left[i]) + np.array([laneWidth / 2, 0]))
 
             else:
 
