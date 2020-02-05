@@ -76,7 +76,7 @@ class DetectIntersection():
         
         if self.sign_detected and not sign_detection:
             
-            if self.count >= 4: 
+            if self.count >= 6: 
                 output = 'right' if self.memory.mean() > 0 else 'left'
                 self.sign_detected = False
                 self.count = 0
