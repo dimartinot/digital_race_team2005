@@ -1,3 +1,6 @@
+#! /usr/bin/env python
+#-*- coding: utf-8 -*-
+
 import numpy as np
 import cv2
 import rospy
@@ -27,6 +30,10 @@ carPos = None
 class CarControl():
 
     def __init__(self):
+
+        self.step_turn = 26
+        self.max_step = 25
+        self.direction = None
 
         self.carPos = cv2.KeyPoint(
             120,
@@ -94,3 +101,27 @@ class CarControl():
     def goStraight(self, velocity=10):
         self.steer_publisher.publish(std_msgs.msg.Float32(0))
         self.speed_publisher.publish(std_msgs.msg.Float32(velocity))
+
+    def turnHere(self):
+        """ Exécute la maneuvre nécessaire pour un virage.
+    
+        ENTREE: direction: "left" to trun left or "right to turn right"
+        """
+
+        angle = 0
+
+        turning = self.step_turn < self.max_step
+
+        if turning:
+            if self.direction == "right":
+                angle = 20 # to turn right
+            elif self.direction == "left":
+                angle = -20 # to turn left
+
+
+        self.steer_publisher.publish(std_msgs.msg.Float32(angle))
+
+        self.step_turn+=1
+
+        return turning
+        

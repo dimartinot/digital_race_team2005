@@ -9,15 +9,15 @@ from cv_bridge import CvBridge, CvBridgeError
 from classes.DetectLane import *
 from classes.CarControl import *
 from classes.DetectSign import *
-from classes.DetectLaneV2 import *
+from classes.DetectIntersection import *
 
 
 
 stream = True
 
 detect = DetectLane()
-#lane_detect = DetectLanev2()
 sign_detect = DetectSign()
+inters_detect = DetectIntersection()
 car = CarControl()
 
 skipFrame = 1
@@ -42,7 +42,6 @@ def imageCallback(msg):
 
         detect.createTrackbars()
         #sign_detect.createTrackbars()
-        #lane_detect.createTrackbars()
         trackbar_created = True
 
     try:
@@ -52,20 +51,25 @@ def imageCallback(msg):
 
         #with_lanes = find_street_lanes(cv_image)
 
-        decision = sign_detect.main(cv_image)
-        if (decision is not None):
-            # launch turn procedure
-            print("Sign detected: {}".format(decision))
+        sign_direction = sign_detect.main(cv_image)
+        decision = inters_detect.main(cv_image, sign_direction)
+
+
         cv2.imshow("View", cv_image)
         cv2.waitKey(1)
         detect.update(cv_image)
-        #lane_detect.main(cv_image)
 
+        if decision:
+            car.step_turn = 0
+            car.direction = decision
 
-        car.driverCar(
+        if car.step_turn <= car.max_step:
+            car.turnHere()
+        else:
+            car.driverCar(
             detect.getLeftLane(),
             detect.getRightLane(),
-            50
+            40
         )
 
 
@@ -78,7 +82,7 @@ def videoProcess(msg):
 
     if depth_created == False:
 
-        #cv2.namedWindow("Depth")
+        # cv2.namedWindow("Depth")
         depth_created = True
 
     else:
@@ -86,13 +90,19 @@ def videoProcess(msg):
         np_arr = np.fromstring(msg.data, np.uint8)
         cv_image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
 
-        cv_image[cv_image > 127] = 0
+        # cv_image[cv_image > 127] = 0
 
-        #cv2.imshow("Depth", cv_image)
-        #detect.update(frame)
-        # lane_detect.main(frame)
-        #sign_detect.main(frame)
-        #cv2.waitKey(1)
+        # print('TEST:', cv_image[0])
+        # circle = inters_detect.checking(cv_image)
+        # print('CHECK:', circle)
+        """
+        if circle:
+            print('circle')
+        """
+        # cv2.imshow("Depth", cv_image)
+        # detect.update(frame)
+        # sign_detect.main(frame)
+        cv2.waitKey(1)
 
 def listener():
 
@@ -105,7 +115,6 @@ def listener():
     rospy.init_node('image_listener', anonymous=True)
 
     # detect = DetectLane()
-    #lane_detect = DetectLanev2()
     sign_detect = DetectSign()
     car = CarControl()
 

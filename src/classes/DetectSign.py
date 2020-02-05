@@ -7,8 +7,14 @@ class DetectSign():
         self.blobparams = cv2.SimpleBlobDetector_Params()
         self.blobparams.filterByArea = True
         self.blobparams.minArea = 100
+        self.blobparams.maxArea = 400
         self.blobparams.filterByCircularity = False
-        self.blobparams.filterByInertia=False
+        # FIXME: to tuned
+        # self.blobparams.filterByInertia=True
+        # self.blobparams.minInertiaRatio=0.7
+        # self.blobparams.maxInertiaRatio=1
+        ####
+        self.blobparams.filterByInertia = False
         self.blobparams.filterByConvexity=False
         self.blobparams.minDistBetweenBlobs = 500
 
@@ -28,6 +34,8 @@ class DetectSign():
             'direction': None,
             'count': 0
         }
+
+        self.memory = np.zeros(5)
     
     def createTrackbars(self):
         
@@ -114,6 +122,7 @@ class DetectSign():
                 g_center = np.sum(white_pixels[1])/len(white_pixels[1])
 
                 decision = 'left' if g_center>=sign.shape[1]/2 else 'right'
+                
 
             return(decision)
 
@@ -127,35 +136,55 @@ class DetectSign():
         # cv2.imshow('Cropped', detect)
         # cv2.imshow('Detect sign', original)
 
-    def fire(self, thresholded):
+    def fire(self, frame, thresholded):
         """ TODO: comments
         """
         decision = self.recognize(thresholded)
+        
+        # cv2.putText(frame,decision, (10,30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2)
+        
+        self.memory[0] = self.memory[1]
+        self.memory[1] = self.memory[2]
+        self.memory[2] = self.memory[3]
+        self.memory[3] = self.memory[4]
 
-        fire = False
-
-        if decision: 
+        if decision:
+            """ 
             if decision == self.spikes['direction']:
                 self.spikes['count']+=1
             else:
                 self.spikes['direction']=decision
                 self.spikes['count']=1
+            """
+            self.memory[4] = -1 if decision=='left' else 1
         else:
-            self.spikes['direction']=decision
-            self.spikes['count']=0
+            # self.spikes['direction']=decision
+            # self.spikes['count']=0
+            self.memory[4] = 0
 
-        
-        if self.spikes['count']>=4 :
+        """
+        fire = False
+        if self.spikes['count']>=3 :
             fire = True
             self.spikes['count']=0
 
         return(self.spikes['direction'] if fire else None)
+        """
+
+        mean = self.memory.mean()
+
+        if abs(mean)<0.3:
+            return(None)
+        else:
+            if mean>0:
+                return('right')
+            else:
+                return('left')
 
     def main(self, frame):
         """ TODO: comments
         """
-        original = np.copy(frame)
-        detect = np.copy(original)
+        detect = np.copy(frame)
 
         heigh = frame.shape[0]
         width = frame.shape[1]
@@ -172,11 +201,11 @@ class DetectSign():
 
         thresholded = cv2.bitwise_not(thresholded)
 
-        decision = self.fire(thresholded)
+        output = self.fire(frame, thresholded)
 
-        cv2.putText(frame,decision, (10,30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
+        # cv2.putText(frame,output, (10,50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,0,0), 2)
 
-        return(decision)
+        return(output)
         
         
 
