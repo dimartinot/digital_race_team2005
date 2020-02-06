@@ -130,7 +130,7 @@ class DetectLane():
             - src: cv2 image
         """
         lines = cv2.HoughLinesP(src, 1, np.pi/180, 1)
-        for i in range(lines.shape[0]):
+        for i in range(lines.shape[0]): #FIXME: "'NoneType' object has no attribute 'shape'" possible
             l = lines[i]
             cv2.line(src, (l[0][0], l[0][1]), (l[0][2], l[0][3]), 255, 3, cv2.LINE_AA)
 
@@ -277,7 +277,7 @@ class DetectLane():
 
         for i in range(points.shape[0]):
             for j in range(len(points[i])):
-                if (pointMap[i][j] > max2 and (i != posMax.pt[0] or j != posMax.pt[1]) and postPoint[i][j] == -1):
+                if (pointMap[i][j] > max2 and (i != posMax.pt[0] or j != posMax.pt[1]) and postPoint[i][j] == -1): #FIXME "local variable 'posMax' referenced before assignment" possible
                     max2 = pointMap[i][j]
                     posMax2 = cv2.KeyPoint(i, j, _size=0)
 
