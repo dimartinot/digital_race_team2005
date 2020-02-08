@@ -10,6 +10,7 @@ from classes.DetectLane import *
 from classes.CarControl import *
 from classes.DetectSign import *
 from classes.DetectIntersection import *
+from classes.DetectObstacle import *
 
 
 
@@ -19,7 +20,7 @@ detect = DetectLane()
 sign_detect = DetectSign()
 inters_detect = DetectIntersection()
 car = CarControl()
-
+obstacle_detect = DetectObstacle()
 skipFrame = 1
 
 trackbar_created = False
@@ -30,35 +31,33 @@ bridge = CvBridge()
 def imageCallback(msg):
 
     global trackbar_created
-
+    global count
 
     if trackbar_created == False:
 
-        cv2.namedWindow("Threshold")
-        cv2.namedWindow("View")
-        cv2.namedWindow("Binary")
-        cv2.namedWindow("Bird View")
-        cv2.namedWindow("Lane Detect")
+        #cv2.namedWindow("Threshold")
+        #cv2.namedWindow("View")
+        #cv2.namedWindow("Binary")
+        #cv2.namedWindow("Bird View")
+        #cv2.namedWindow("Lane Detect")
 
         detect.createTrackbars()
         #sign_detect.createTrackbars()
         trackbar_created = True
-
+        count = 0
     try:
+        count+=1
         #### direct conversion to CV2 ####
         np_arr = np.fromstring(msg.data, np.uint8)
         cv_image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
-
         #with_lanes = find_street_lanes(cv_image)
 
         sign_direction = sign_detect.main(cv_image)
         decision = inters_detect.main(cv_image, sign_direction)
-
-
-        cv2.imshow("View", cv_image)
-        cv2.waitKey(1)
-        detect.update(cv_image)
-
+        #if count % 10 == 0:
+        #    cv2.imshow("View", cv_image)
+        #    cv2.waitKey(1)
+        detect.update(cv_image, count)
         if decision:
             car.step_turn = 0
             car.direction = decision
@@ -72,6 +71,8 @@ def imageCallback(msg):
             40
         )
 
+        #print("FIN FRAME {}".format(count))
+
 
     except CvBridgeError as e:
         print("Could not convert to bgr8: {}".format(e))
@@ -79,10 +80,10 @@ def imageCallback(msg):
 
 def videoProcess(msg):
     global depth_created
-
+    
     if depth_created == False:
 
-        # cv2.namedWindow("Depth")
+        cv2.namedWindow("Depth")
         depth_created = True
 
     else:
@@ -90,19 +91,11 @@ def videoProcess(msg):
         np_arr = np.fromstring(msg.data, np.uint8)
         cv_image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
 
-        # cv_image[cv_image > 127] = 0
-
-        # print('TEST:', cv_image[0])
-        # circle = inters_detect.checking(cv_image)
-        # print('CHECK:', circle)
-        """
-        if circle:
-            print('circle')
-        """
-        # cv2.imshow("Depth", cv_image)
-        # detect.update(frame)
-        # sign_detect.main(frame)
+        cv2.imshow("Depth", cv_image)
         cv2.waitKey(1)
+        
+        gray = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
+        obstacle = obstacle_detect.main(gray)
 
 def listener():
 
@@ -117,6 +110,7 @@ def listener():
     # detect = DetectLane()
     sign_detect = DetectSign()
     car = CarControl()
+    obstacle_detect = DetectObstacle()
 
     if (stream):
         print("setting subscriber")

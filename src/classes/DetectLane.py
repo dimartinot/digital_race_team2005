@@ -1,7 +1,6 @@
 import numpy as np
 import cv2
 
-
 minThreshold = np.array([0, 0, 210])
 maxThreshold = np.array([179, 255, 255])
 minShadowTh = np.array([90, 43, 36])
@@ -49,8 +48,8 @@ class DetectLane():
     def getRightLane(self):
         return self.rightLane
 
-    def update(self, src):
-        img = self.preProcess(src)
+    def update(self, src, count):
+        img = self.preProcess(src, count)
         layers1 = self.splitLayer(img, self.VERTICAL)
         # print('LAYERS:', layers1)
         points1 = self.centerRoadSide(layers1, self.VERTICAL)
@@ -78,10 +77,12 @@ class DetectLane():
             if (self.rightLane[i] != None):
                 cv2.circle(lane, (int(self.rightLane[i][0]), int(self.rightLane[i][1])), 1, (255,0,0), 2, 8, 0)
 
-        cv2.imshow("Lane Detect", lane)
-        cv2.waitKey(10)
+        #if count % 100 == 0:
+        #    cv2.imshow("Lane Detect", lane)
+        #    cv2.waitKey(10)
+        
 
-    def preProcess(self, src):
+    def preProcess(self, src, count):
 
         imgHSV = cv2.cvtColor(src, cv2.COLOR_BGR2HSV)
         imgThresholded = cv2.inRange(
@@ -91,11 +92,13 @@ class DetectLane():
         )
 
         dst = self.BIRDVIEWTranform(imgThresholded)
-        cv2.imshow("Bird View", dst)
-        cv2.waitKey(10)
+        #if count % 10 == 0:
+        #    cv2.imshow("Bird View", dst)
+        #    cv2.waitKey(10)
         self.fillLane(dst)
-        cv2.imshow("Binary", imgThresholded)
-        cv2.waitKey(10)
+        #if count % 10 == 0:
+        #    cv2.imshow("Binary", imgThresholded)
+         #   cv2.waitKey(10)
 
         return dst
 
