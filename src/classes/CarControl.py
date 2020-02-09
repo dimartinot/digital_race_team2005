@@ -41,6 +41,9 @@ class CarControl():
             _size=0
         )
 
+        self.coefRight = 3
+        self.coefLeft = 2
+
         self.steer_publisher = rospy.Publisher("/team2005/set_angle", std_msgs.msg.Float32, queue_size=10)
         self.speed_publisher = rospy.Publisher("/team2005/set_speed", std_msgs.msg.Float32, queue_size=10)
 
@@ -84,9 +87,9 @@ class CarControl():
             if (left[i] != None and right[i] != None):
                 #error = self.errorAngle((np.array(left[i]) + np.array(right[i])) / 2)
                 if (self.stay_left):
-                    error = self.errorAngle(3*np.array(left[i]) / 5 + 2*np.array(right[i])/5)
+                    error = self.errorAngle(self.coefRight*np.array(left[i]) / 5 + self.coefLeft*np.array(right[i])/5)
                 else:
-                    error = self.errorAngle(2*np.array(left[i]) / 5 + 3*np.array(right[i])/5)
+                    error = self.errorAngle(self.coefLeft*np.array(left[i]) / 5 + self.coefRight*np.array(right[i])/5)
 
             elif left[i] != None:
                 error = self.errorAngle(np.array(left[i]) + np.array([laneWidth / 2, 0]))
@@ -95,6 +98,10 @@ class CarControl():
 
                 error = self.errorAngle(np.array(right[i]) - np.array([laneWidth / 2, 0]))
 
+            
+            if abs(error) >20:
+                error = 0
+                
             self.steer_publisher.publish(std_msgs.msg.Float32(error))
             self.speed_publisher.publish(std_msgs.msg.Float32(velocity))
 
@@ -124,4 +131,24 @@ class CarControl():
         self.step_turn+=1
 
         return turning
+
+    def obstacle(self, keypoint):
         
+        height = 240
+        width = 320
+        center = [160,120]
+        dangerZone = False
+        angle = 0
+        distance = center[0] - keypoint.pt[0]
+        print(distance)
+
+        if abs(distance) < 100:
+            dangerZone = True
+
+        if dangerZone == True:
+            if distance > 0:
+                angle = 5
+            elif distance < 0:
+                angle = -5
+        #print('angle: {}'.format(angle))
+        #self.steer_publisher.publish(std_msgs.msg.Float32(angle))

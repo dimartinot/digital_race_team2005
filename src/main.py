@@ -25,6 +25,8 @@ skipFrame = 1
 
 trackbar_created = False
 depth_created = False
+global pos_keypoint
+pos_keypoint = []
 
 bridge = CvBridge()
 
@@ -32,32 +34,31 @@ def imageCallback(msg):
 
     global trackbar_created
     global count
-
     if trackbar_created == False:
-
+        count = 0
         #cv2.namedWindow("Threshold")
         #cv2.namedWindow("View")
         #cv2.namedWindow("Binary")
         #cv2.namedWindow("Bird View")
         #cv2.namedWindow("Lane Detect")
-
-        detect.createTrackbars()
+        #detect.createTrackbars()
         #sign_detect.createTrackbars()
         trackbar_created = True
-        count = 0
     try:
-        count+=1
+        
         #### direct conversion to CV2 ####
         np_arr = np.fromstring(msg.data, np.uint8)
         cv_image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
         #with_lanes = find_street_lanes(cv_image)
-
+        
         sign_direction = sign_detect.main(cv_image)
         decision = inters_detect.main(cv_image, sign_direction)
         #if count % 10 == 0:
         #    cv2.imshow("View", cv_image)
         #    cv2.waitKey(1)
-        detect.update(cv_image, count)
+        
+        detect.update(cv_image,count,pos_keypoint)
+        
         if decision:
             car.step_turn = 0
             car.direction = decision
@@ -69,11 +70,9 @@ def imageCallback(msg):
             detect.getLeftLane(),
             detect.getRightLane(),
             40
-        )
-
-        #print("FIN FRAME {}".format(count))
-
-
+            )
+        count += 1
+    
     except CvBridgeError as e:
         print("Could not convert to bgr8: {}".format(e))
 
@@ -95,7 +94,10 @@ def videoProcess(msg):
         cv2.waitKey(1)
         
         gray = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
-        obstacle = obstacle_detect.main(gray)
+        pos_keypoint = obstacle_detect.main(gray)
+
+        if pos_keypoint != []:
+            car.obstacle(pos_keypoint)
 
 def listener():
 

@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 
+
 minThreshold = np.array([0, 0, 210])
 maxThreshold = np.array([179, 255, 255])
 minShadowTh = np.array([90, 43, 36])
@@ -48,8 +49,9 @@ class DetectLane():
     def getRightLane(self):
         return self.rightLane
 
-    def update(self, src, count):
-        img = self.preProcess(src, count)
+    def update(self, src, count, keypoint):
+        
+        img = self.preProcess(src, count, keypoint)
         layers1 = self.splitLayer(img, self.VERTICAL)
         # print('LAYERS:', layers1)
         points1 = self.centerRoadSide(layers1, self.VERTICAL)
@@ -60,7 +62,7 @@ class DetectLane():
         lane = np.zeros(img.shape, dtype=np.uint8)
 
         lane = cv2.cvtColor(lane, cv2.COLOR_GRAY2BGR)
-
+        """
         for i in range(points1.shape[0]):
             for j in range(len(points1[i])):
                 (x,y) = points1[i][j].pt
@@ -68,7 +70,7 @@ class DetectLane():
                 y = int(y)
 
                 cv2.circle(self.BIRDVIEW, (x,y) , 1, (0,0,255), 2, 8, 0)
-
+        """
         for i in range(1, len(self.leftLane)):
             if (self.leftLane[i] != None):
                 cv2.circle(lane, (int(self.leftLane[i][0]), int(self.leftLane[i][1])), 1, (0,0,255), 2, 8, 0)
@@ -82,7 +84,7 @@ class DetectLane():
         #    cv2.waitKey(10)
         
 
-    def preProcess(self, src, count):
+    def preProcess(self, src, count, keypoint):
 
         imgHSV = cv2.cvtColor(src, cv2.COLOR_BGR2HSV)
         imgThresholded = cv2.inRange(
@@ -90,11 +92,16 @@ class DetectLane():
             minThreshold[0:3],
             maxThreshold[0:3]
         )
+        if keypoint != []:
+            cv2.circle(imgThresholded, keypoint, 50, (255,255,255),cv2.FILLED, 1)
 
         dst = self.BIRDVIEWTranform(imgThresholded)
+        #dst = cv2.cvtColor(dst, cv2.COLOR_BGR2GRAY)
         #if count % 10 == 0:
-        #    cv2.imshow("Bird View", dst)
-        #    cv2.waitKey(10)
+        
+        #cv2.imshow("Bird View", dst)
+        
+        #cv2.waitKey(0)
         self.fillLane(dst)
         #if count % 10 == 0:
         #    cv2.imshow("Binary", imgThresholded)
@@ -388,3 +395,10 @@ class DetectLane():
 
         warp = cv2.warpPerspective(src, M, (self.BIRDVIEW_HEIGHT, self.BIRDVIEW_WIDTH), flags=cv2.INTER_LINEAR, borderValue = cv2.BORDER_CONSTANT)
         return warp
+
+
+"""
+img = cv2.imread('1.png', 1)
+detect = DetectLane()
+detect.update(img,0)
+"""
