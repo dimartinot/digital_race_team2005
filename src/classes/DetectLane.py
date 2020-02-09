@@ -30,6 +30,7 @@ class DetectLane():
         self.HORIZONTAL = 1
         self.leftLane = []
         self.rightLane = []
+        self.pos_obstacle = []
 
     def createTrackbars(self):
         cv2.createTrackbar("LowH", "Threshold", minThreshold[0], 179, to_pass)
@@ -49,9 +50,9 @@ class DetectLane():
     def getRightLane(self):
         return self.rightLane
 
-    def update(self, src, count, keypoint):
+    def update(self, src, count):
         
-        img = self.preProcess(src, count, keypoint)
+        img = self.preProcess(src, count)
         layers1 = self.splitLayer(img, self.VERTICAL)
         # print('LAYERS:', layers1)
         points1 = self.centerRoadSide(layers1, self.VERTICAL)
@@ -79,10 +80,12 @@ class DetectLane():
             if (self.rightLane[i] != None):
                 cv2.circle(lane, (int(self.rightLane[i][0]), int(self.rightLane[i][1])), 1, (255,0,0), 2, 8, 0)
 
-        # cv2.imshow("Lane Detect", lane)
-        cv2.waitKey(10)
+        
+       # cv2.imshow("Lane Detect", lane)
+        
+        
 
-    def preProcess(self, src, count, keypoint):
+    def preProcess(self, src, count):
 
         imgHSV = cv2.cvtColor(src, cv2.COLOR_BGR2HSV)
         imgThresholded = cv2.inRange(
@@ -90,8 +93,8 @@ class DetectLane():
             minThreshold[0:3],
             maxThreshold[0:3]
         )
-        if keypoint != []:
-            cv2.circle(imgThresholded, keypoint, 50, (255,255,255),cv2.FILLED, 1)
+        if self.pos_obstacle != []:
+            cv2.circle(imgThresholded, (int(self.pos_obstacle.pt[0]) +30,int(self.pos_obstacle.pt[0])), 25, (255,255,255),cv2.FILLED, 1)
 
         dst = self.BIRDVIEWTranform(imgThresholded)
         #dst = cv2.cvtColor(dst, cv2.COLOR_BGR2GRAY)

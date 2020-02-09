@@ -27,8 +27,6 @@ skipFrame = 1
 
 trackbar_created = False
 depth_created = False
-global pos_keypoint
-pos_keypoint = []
 
 bridge = CvBridge()
 
@@ -57,10 +55,9 @@ def imageCallback(msg):
         sign_direction = sign_detect.main(cv_image)
         decision = inters_detect.main(cv_image, sign_direction)
         #if count % 10 == 0:
-        #    cv2.imshow("View", cv_image)
+        cv2.imshow("View", cv_image)
         #    cv2.waitKey(1)
-        
-        detect.update(cv_image,count,pos_keypoint)
+        detect.update(cv_image,count)
         
         if decision:
             car.step_turn = 0
@@ -104,17 +101,11 @@ def videoProcess(msg):
         cv2.waitKey(1)
         
         gray = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
-        pos_keypoint = obstacle_detect.main(gray)
-
-        # car.driverCar(
-        #     border_detect.getLeftLane(),
-        #     border_detect.getRightLane(),
-        #     40
-        #     )
-
+        detect.pos_obstacle = obstacle_detect.main(gray)
+        """
         if pos_keypoint != []:
             car.obstacle(pos_keypoint)
-
+        """
 def listener():
 
     # In ROS, nodes are uniquely named. If two nodes with the same

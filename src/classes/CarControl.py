@@ -142,7 +142,6 @@ class CarControl():
         dangerZone = False
         angle = 0
         distance = center[0] - keypoint.pt[0]
-        # print(distance)
 
         if abs(distance) < 100:
             dangerZone = True

@@ -27,8 +27,6 @@ class DetectObstacle():
 
         for label in np.unique(labels):
 
-
-
             # For each label, put them in with block on the mask
             labelMask = np.zeros(thresh.shape, dtype="uint8")
             labelMask[labels == label] = 255
@@ -36,9 +34,11 @@ class DetectObstacle():
             # Count the nb of whith pixel
             numPixels = cv.countNonZero(labelMask)
             #print(numPixels)
-
+            if numPixels > 50 and numPixels < 1000:
+                print(numPixels)
+            
             # Filter the labels with their size
-            if numPixels > 250 and numPixels < 1000:
+            if numPixels > 110 and numPixels < 1000:
                 ### This labelMask is the danger block of the car !
                 mask = cv.add(mask, labelMask)
                 self.danger += 1
@@ -68,10 +68,12 @@ class DetectObstacle():
         #print(self.danger)
 
         # Cut the border of the frame
+        img[np.where(img == [0])] = [255]
         imgCut = img.copy()
+        
         imgCut[0:self.height, 0:self.width/5] = 0 #Left
         imgCut[0:self.height, (4*self.width/5):self.width] = 0 #Right
-        imgCut[0:self.height/4, 0:self.width] = 0 #Top
+        imgCut[0:13*self.height/48, 0:self.width] = 0 #Top
         imgCut[(3*self.height/4):self.height, 0:self.width] = 0 #Bottom
 
         # cv.imshow("ImageCut", imgCut)
@@ -103,8 +105,8 @@ class DetectObstacle():
 
         if len(keypoints) > 0:
             self.keypoint = keypoints[0]
-            # print(self.keypoint.size)
-            # print(self.keypoint.pt)
+            #print(self.keypoint.size)
+            #print(self.keypoint.pt)
         
         img = cv.cvtColor(img, cv.COLOR_GRAY2RGB)
         if self.keypoint != []:
