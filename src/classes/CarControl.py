@@ -86,6 +86,8 @@ class CarControl():
 
             if (left[i] != None and right[i] != None):
                 #error = self.errorAngle((np.array(left[i]) + np.array(right[i])) / 2)
+                # margin coefficients:
+
                 if (self.stay_left):
                     error = self.errorAngle(self.coefRight*np.array(left[i]) / 5 + self.coefLeft*np.array(right[i])/5)
                 else:
@@ -140,7 +142,7 @@ class CarControl():
         dangerZone = False
         angle = 0
         distance = center[0] - keypoint.pt[0]
-        print(distance)
+        # print(distance)
 
         if abs(distance) < 100:
             dangerZone = True

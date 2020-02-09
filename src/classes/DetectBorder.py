@@ -1,134 +1,64 @@
-import numpy as np
 import cv2
+import numpy as np
 
-
-minThreshold = np.array([0, 0, 210])
-maxThreshold = np.array([179, 255, 255])
-minShadowTh = np.array([90, 43, 36])
-maxShadowTh = np.array([120, 81, 171])
-minLaneInShadow = np.array([90, 43, 97])
-maxLaneInShadow = np.array([120, 80, 171])
-binaryThreshold = 180
-
-skyLine = 85
-shadowParam = 40
-
-skipFrame = 1
-
-
-def to_pass(x):
-    pass
-
-class DetectLane():
-
+class DetectBorder():
     def __init__(self):
+        
+        self.blobparams = cv2.SimpleBlobDetector_Params()
+        self.blobparams.filterByArea = True
+        self.blobparams.minArea = 0
+        self.blobparams.filterByInertia = False
+        self.blobparams.filterByCircularity = False
+        self.blobparams.filterByConvexity=False
+        self.blobparams.minDistBetweenBlobs = 300
+
+        self.detector = cv2.SimpleBlobDetector_create(self.blobparams)
 
         self.slideThickness = 10
         self.BIRDVIEW_WIDTH = 240
         self.BIRDVIEW_HEIGHT = 320
+        self.skyLine = 85
         self.VERTICAL = 0
         self.HORIZONTAL = 1
         self.leftLane = []
         self.rightLane = []
-
-    def createTrackbars(self):
-        cv2.createTrackbar("LowH", "Threshold", minThreshold[0], 179, to_pass)
-        cv2.createTrackbar("HighH", "Threshold", maxThreshold[0], 179, to_pass)
-
-        cv2.createTrackbar("LowS", "Threshold", minThreshold[1], 255, to_pass)
-        cv2.createTrackbar("HighS", "Threshold", maxThreshold[1], 255, to_pass)
-
-        cv2.createTrackbar("LowV", "Threshold", minThreshold[2], 255, to_pass)
-        cv2.createTrackbar("HighV", "Threshold", maxThreshold[2], 255, to_pass)
-
-        cv2.createTrackbar("Shadow Param", "Threshold", shadowParam, 255, to_pass)
-
+    
     def getLeftLane(self):
         return self.leftLane
 
     def getRightLane(self):
         return self.rightLane
 
-    def update(self, src, count, keypoint):
-        
-        img = self.preProcess(src, count, keypoint)
-        layers1 = self.splitLayer(img, self.VERTICAL)
-        # print('LAYERS:', layers1)
-        points1 = self.centerRoadSide(layers1, self.VERTICAL)
+    def delNoise(self, frame):
 
-        self.detectLeftRight(points1)
+        for i in range(0,frame.shape[0]):
+            for j in range(1,frame.shape[1]-1):
+                if frame[i][j]==255:
+                    if frame[i][j-1]==frame[i][j+1]==0:
+                        frame[i][j] = 0
+        return(frame)
 
-        self.BIRDVIEW = np.zeros(img.shape, dtype=np.uint8)
-        lane = np.zeros(img.shape, dtype=np.uint8)
+    def birdViewTransform(self, src):
+        height, width = src.shape
 
-        lane = cv2.cvtColor(lane, cv2.COLOR_GRAY2BGR)
-        """
-        for i in range(points1.shape[0]):
-            for j in range(len(points1[i])):
-                (x,y) = points1[i][j].pt
-                x = int(x)
-                y = int(y)
+        src_vertices = np.array([
+            [0, self.skyLine],
+            [width, self.skyLine],
+            [width, height],
+            [0, height]
+        ], dtype="float32")
 
-                cv2.circle(self.BIRDVIEW, (x,y) , 1, (0,0,255), 2, 8, 0)
-        """
-        for i in range(1, len(self.leftLane)):
-            if (self.leftLane[i] != None):
-                cv2.circle(lane, (int(self.leftLane[i][0]), int(self.leftLane[i][1])), 1, (0,0,255), 2, 8, 0)
+        dst_vertices = np.array([
+            [0,0],
+            [self.BIRDVIEW_WIDTH, 0],
+            [self.BIRDVIEW_WIDTH - 105, self.BIRDVIEW_HEIGHT],
+            [105, self.BIRDVIEW_HEIGHT]
+        ], dtype="float32")
 
-        for i in range(1, len(self.rightLane)):
-            if (self.rightLane[i] != None):
-                cv2.circle(lane, (int(self.rightLane[i][0]), int(self.rightLane[i][1])), 1, (255,0,0), 2, 8, 0)
+        M = cv2.getPerspectiveTransform(src_vertices, dst_vertices)
 
-        # cv2.imshow("Lane Detect", lane)
-        cv2.waitKey(10)
-
-    def preProcess(self, src, count, keypoint):
-
-        imgHSV = cv2.cvtColor(src, cv2.COLOR_BGR2HSV)
-        imgThresholded = cv2.inRange(
-            imgHSV,
-            minThreshold[0:3],
-            maxThreshold[0:3]
-        )
-        if keypoint != []:
-            cv2.circle(imgThresholded, keypoint, 50, (255,255,255),cv2.FILLED, 1)
-
-        dst = self.BIRDVIEWTranform(imgThresholded)
-        #dst = cv2.cvtColor(dst, cv2.COLOR_BGR2GRAY)
-        #if count % 10 == 0:
-        
-        #cv2.imshow("Bird View", dst)
-        
-        #cv2.waitKey(0)
-        self.fillLane(dst)
-        # cv2.imshow("Binary", imgThresholded)
-        cv2.waitKey(10)
-
-        return dst
-
-
-    def laneInShadow(self, src):
-        shadow = np.zeros(src.shape)
-
-        imgHSV = cv2.cvtColor(src, cv2.COLOR_BGR2HSV)
-        shadowMask = cv2.inRange(
-            imgHSV,
-            minShadowTh[0:3],
-            maxShadowTh[0:3]
-        )
-
-        locs = np.where(shadowMask != 0)
-        shadow[locs[0], locs[1]] = src[locs[0], locs[1]]
-
-        shadowHSV = cv2.cvtColor(shadow, cv2.COLOR_BGR2HSV)
-        laneShadow = cv2.inRange(
-            shadowHSV,
-            minLaneInShadow[0:3],
-            maxLaneInShadow[0:3]
-        )
-
-        return laneShadow
-
+        warp = cv2.warpPerspective(src, M, (self.BIRDVIEW_HEIGHT, self.BIRDVIEW_WIDTH), flags=cv2.INTER_LINEAR, borderValue = cv2.BORDER_CONSTANT)
+        return(warp)
 
     def fillLane(self, src):
         """
@@ -144,7 +74,7 @@ class DetectLane():
         
         except:
             pass
-
+    
     def splitLayer(self, src, dire):
         """
             Split an image in multiple subimages.
@@ -231,9 +161,9 @@ class DetectLane():
 
         # np use is important: vector<vector<Point> > will be translated as a np 2D-array of cv2 KeyPoints
         return np.array(res)
-
-
-    def detectLeftRight(self, points):
+    
+    def detectBorders(self, points):
+    
         """
         Method used to detect left and right lanes
         Input:
@@ -275,7 +205,7 @@ class DetectLane():
                         if (abs(x_m - x) < dis and abs(y_m - y) < err):
                             err = abs(x_m - x)
 
-                            pointMap[i][j] = pointMap[i + m][k] + 1;
+                            pointMap[i][j] = pointMap[i + m][k] + 1
                             prePoint[i][j] = k
                             postPoint[i + m][k] = j
                             check = True
@@ -364,42 +294,83 @@ class DetectLane():
             for i in range(len(lane2)):
                 self.leftLane[int(np.floor(lane2[i][1] / self.slideThickness ))] = lane2[i]
 
-    def morphological(self, img):
-        dst = cv2.dilate(img, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (10,20)))
-        dst = cv2.erode(dst, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (10, 20)))
+    def threshold(self, frame):
 
-        return dst
+        for i in range(frame.shape[0]):
+            maxi = np.amax(frame[i])
+            mini = np.amin(frame[i])
 
-    def transform(self, src_vertices, dst_vertices, src, dst):
-        M = cv2.getPerspectiveTransform(src_vertices, dst_vertices)
-        cv2.warpPerspective(src, dst, M, dst.shape, flags=cv2.INTER_LINEAR, borderValue = cv2.BORDER_CONSTANT)
+            _, output = cv2.threshold(frame[i], maxi-int(7*(maxi-mini)/8), 255, cv2.THRESH_BINARY)
+
+            frame[i] = output.flatten()
+
+            if len(np.where(frame[i]==255)[0])<=5:
+                frame[i] = np.array([255]*frame.shape[1])
+
+        return(frame)
+
+    def main(self, frame):
+        copy = np.copy(frame)
+
+        heigh = copy.shape[0]
+
+        copy = copy[int(heigh/4):]
+
+        copy = cv2.cvtColor(copy, cv2.COLOR_RGB2GRAY)
+
+        copy = self.threshold(copy)
+        copy = cv2.bitwise_not(copy)
+
+        copy = cv2.resize(copy, dsize=(320, 240), interpolation=cv2.INTER_CUBIC)
+        
+        bird_view = self.birdViewTransform(copy)
+
+        cv2.imshow("Bird View", bird_view)
+
+        self.fillLane(bird_view)
+
+        layers = self.splitLayer(bird_view, self.VERTICAL)
+
+        points = self.centerRoadSide(layers, self.VERTICAL)
+
+        self.detectBorders(points)
+
+        lane = np.zeros(bird_view.shape, dtype=np.uint8)
+        lane = cv2.cvtColor(lane, cv2.COLOR_GRAY2BGR)
+
+        # for i in range(points.shape[0]):
+        #     for j in range(len(points[i])):
+        #         (x,y) = points[i][j].pt
+        #         x = int(x)
+        #         y = int(y)
+
+        #         cv2.circle(lane, (x,y) , 1, (0,0,255), 2, 8, 0)
+
+        for i in range(1, len(self.leftLane)):
+            if (self.leftLane[i] != None):
+                cv2.circle(lane, (int(self.leftLane[i][0]), int(self.leftLane[i][1])), 1, (0,0,255), 2, 8, 0)
+
+        for i in range(1, len(self.rightLane)):
+                if (self.rightLane[i] != None):
+                    cv2.circle(lane, (int(self.rightLane[i][0]), int(self.rightLane[i][1])), 1, (255,0,0), 2, 8, 0)
+
+        # cv2.imshow("Lane Detect", lane)
+
+        return(lane)
+
+if __name__ == "__main__":
+
+    img = cv2.imread('./data/test_border.png')
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+
+    detect = DetectBorder()
+
+    while True:
 
 
-    def BIRDVIEWTranform(self, src):
-        height, width = src.shape
 
-        src_vertices = np.array([
-            [0, skyLine],
-            [width, skyLine],
-            [width, height],
-            [0, height]
-        ], dtype="float32")
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
 
-        dst_vertices = np.array([
-            [0,0],
-            [self.BIRDVIEW_WIDTH, 0],
-            [self.BIRDVIEW_WIDTH - 105, self.BIRDVIEW_HEIGHT],
-            [105, self.BIRDVIEW_HEIGHT]
-        ], dtype="float32")
-
-        M = cv2.getPerspectiveTransform(src_vertices, dst_vertices)
-
-        warp = cv2.warpPerspective(src, M, (self.BIRDVIEW_HEIGHT, self.BIRDVIEW_WIDTH), flags=cv2.INTER_LINEAR, borderValue = cv2.BORDER_CONSTANT)
-        return warp
-
-
-"""
-img = cv2.imread('1.png', 1)
-detect = DetectLane()
-detect.update(img,0)
-"""
+    
+    cv2.destroyAllWindows()

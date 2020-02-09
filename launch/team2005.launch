@@ -4,5 +4,5 @@
 		<param name="port" value="9090"/>
 	</include>
 
-
+	 <node name="team2005" pkg="team2005" type="main.py" output="screen"/>
 </launch>

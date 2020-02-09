@@ -74,12 +74,12 @@ class DetectObstacle():
         imgCut[0:self.height/4, 0:self.width] = 0 #Top
         imgCut[(3*self.height/4):self.height, 0:self.width] = 0 #Bottom
 
-        cv.imshow("ImageCut", imgCut)
+        # cv.imshow("ImageCut", imgCut)
 
         # Applay the threshold on the cut frame
         thresh = self.thresholdImg(imgCut, self.listThreshold[self.danger])
 
-        cv.imshow("Th", thresh)
+        # cv.imshow("Th", thresh)
         # Identify block of pixel with the almost same color of grey
         labels = measure.label(thresh, connectivity=2, background=255)
         # Create a black mask
@@ -103,8 +103,8 @@ class DetectObstacle():
 
         if len(keypoints) > 0:
             self.keypoint = keypoints[0]
-            print(self.keypoint.size)
-            print(self.keypoint.pt)
+            # print(self.keypoint.size)
+            # print(self.keypoint.pt)
         
         img = cv.cvtColor(img, cv.COLOR_GRAY2RGB)
         if self.keypoint != []:
@@ -127,7 +127,7 @@ class DetectObstacle():
         if self.danger > 0:
             font = cv.FONT_HERSHEY_SIMPLEX
             cv.putText(img,"Danger",(260,20), font, .5,self.color[self.danger],2,cv.LINE_AA)
-        cv.imshow("Depth danger", img)
+        # cv.imshow("Depth danger", img)
 
         return self.keypoint
 

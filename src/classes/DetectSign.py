@@ -8,13 +8,22 @@ class DetectSign():
         self.blobparams.filterByArea = True
         self.blobparams.minArea = 100
         self.blobparams.maxArea = 400
-        self.blobparams.filterByCircularity = False
-        # FIXME: to tuned
-        # self.blobparams.filterByInertia=True
-        # self.blobparams.minInertiaRatio=0.7
-        # self.blobparams.maxInertiaRatio=1
-        ####
+
+        #### Default ####
         self.blobparams.filterByInertia = False
+        self.blobparams.filterByCircularity = False
+        #################
+
+        ###### New ######
+        # self.blobparams.filterByCircularity = True
+        # self.blobparams.minCircularity = 0.4
+        # self.blobparams.maxCircularity = 1
+
+        # self.blobparams.filterByInertia=True
+        # self.blobparams.minInertiaRatio=0.4
+        # self.blobparams.maxInertiaRatio=1
+        #################
+
         self.blobparams.filterByConvexity=False
         self.blobparams.minDistBetweenBlobs = 500
 

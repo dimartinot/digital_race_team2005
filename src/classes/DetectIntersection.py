@@ -3,6 +3,16 @@ import numpy as np
 
 class DetectIntersection():
     def __init__(self):
+
+        # Number of frame without sign needed to turn
+
+        #### Default ####
+        self.threshold = 12
+        #################
+        
+        ###### New ######
+        # self.threshold = 20
+        #################
         
         self.memory = np.zeros(3)
         self.sign_detected = False
@@ -76,7 +86,7 @@ class DetectIntersection():
         
         if self.sign_detected and not sign_detection:
             
-            if self.count >= 6: 
+            if self.count >= self.threshold: 
                 output = 'right' if self.memory.mean() > 0 else 'left'
                 self.sign_detected = False
                 self.count = 0

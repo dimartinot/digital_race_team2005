@@ -11,6 +11,7 @@ from classes.CarControl import *
 from classes.DetectSign import *
 from classes.DetectIntersection import *
 from classes.DetectObstacle import *
+from classes.DetectBorder import *
 
 
 
@@ -19,6 +20,7 @@ stream = True
 detect = DetectLane()
 sign_detect = DetectSign()
 inters_detect = DetectIntersection()
+border_detect = DetectBorder()
 car = CarControl()
 obstacle_detect = DetectObstacle()
 skipFrame = 1
@@ -36,12 +38,13 @@ def imageCallback(msg):
     global count
     if trackbar_created == False:
         count = 0
-        #cv2.namedWindow("Threshold")
-        #cv2.namedWindow("View")
-        #cv2.namedWindow("Binary")
-        #cv2.namedWindow("Bird View")
-        #cv2.namedWindow("Lane Detect")
-        #detect.createTrackbars()
+        # cv2.namedWindow("Threshold")
+        # cv2.namedWindow("View")
+        # cv2.namedWindow("Binary")
+        # cv2.namedWindow("Bird View")
+        # cv2.namedWindow("Lane Detect")
+
+        # detect.createTrackbars()
         #sign_detect.createTrackbars()
         trackbar_created = True
     try:
@@ -82,7 +85,7 @@ def videoProcess(msg):
     
     if depth_created == False:
 
-        cv2.namedWindow("Depth")
+        # cv2.namedWindow("Depth")
         depth_created = True
 
     else:
@@ -90,11 +93,24 @@ def videoProcess(msg):
         np_arr = np.fromstring(msg.data, np.uint8)
         cv_image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
 
-        cv2.imshow("Depth", cv_image)
+        outimage = border_detect.main(cv_image)
+
+        cv2.imshow("Processed", outimage)
+        # cv2.imshow("Left", left)
+        # cv2.imshow("Right", right)        
+        # cv2.imshow("Depth", cv_image)
+        # detect.update(frame)
+        # sign_detect.main(frame)
         cv2.waitKey(1)
         
         gray = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
         pos_keypoint = obstacle_detect.main(gray)
+
+        # car.driverCar(
+        #     border_detect.getLeftLane(),
+        #     border_detect.getRightLane(),
+        #     40
+        #     )
 
         if pos_keypoint != []:
             car.obstacle(pos_keypoint)
@@ -116,7 +132,7 @@ def listener():
 
     if (stream):
         print("setting subscriber")
-        rospy.Subscriber("team2005/camera/rgb/compressed", CompressedImage, imageCallback)
+        # rospy.Subscriber("team2005/camera/rgb/compressed", CompressedImage, imageCallback)
         rospy.Subscriber("team2005/camera/depth/compressed", CompressedImage, videoProcess)
 
         rospy.spin()
