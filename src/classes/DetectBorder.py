@@ -325,7 +325,7 @@ class DetectBorder():
         
         bird_view = self.birdViewTransform(copy)
 
-        cv2.imshow("Bird View", bird_view)
+        #cv2.imshow("Bird View", bird_view)
 
         self.fillLane(bird_view)
 

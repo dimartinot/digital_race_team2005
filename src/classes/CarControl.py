@@ -87,12 +87,12 @@ class CarControl():
             if (left[i] != None and right[i] != None):
                 #error = self.errorAngle((np.array(left[i]) + np.array(right[i])) / 2)
                 # margin coefficients:
-
+                
                 if (self.stay_left):
                     error = self.errorAngle(self.coefRight*np.array(left[i]) / 5 + self.coefLeft*np.array(right[i])/5)
                 else:
                     error = self.errorAngle(self.coefLeft*np.array(left[i]) / 5 + self.coefRight*np.array(right[i])/5)
-
+                
             elif left[i] != None:
                 error = self.errorAngle(np.array(left[i]) + np.array([laneWidth / 2, 0]))
 
@@ -101,9 +101,9 @@ class CarControl():
                 error = self.errorAngle(np.array(right[i]) - np.array([laneWidth / 2, 0]))
 
             
-            if abs(error) >20:
+            if abs(error)>20:
                 error = 0
-                
+            print(error)  
             self.steer_publisher.publish(std_msgs.msg.Float32(error))
             self.speed_publisher.publish(std_msgs.msg.Float32(velocity))
 
@@ -148,8 +148,12 @@ class CarControl():
 
         if dangerZone == True:
             if distance > 0:
-                angle = 5
+                print('Right')
+                self.coefRight = 3.5
+                self.coefLeft = 1.5
             elif distance < 0:
-                angle = -5
+                print('Left')
+                self.coefRight = 3.5
+                self.coefLeft = 1.5
         #print('angle: {}'.format(angle))
         #self.steer_publisher.publish(std_msgs.msg.Float32(angle))

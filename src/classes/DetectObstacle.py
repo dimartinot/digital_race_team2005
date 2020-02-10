@@ -41,8 +41,11 @@ class DetectObstacle():
             if numPixels > 110 and numPixels < 1000:
                 ### This labelMask is the danger block of the car !
                 mask = cv.add(mask, labelMask)
+                if self.danger == 0:
+                    self.count = 0
                 self.danger += 1
-                self.count = 0
+                
+                print("DANGER")
 
         return mask
 
@@ -81,7 +84,7 @@ class DetectObstacle():
         # Applay the threshold on the cut frame
         thresh = self.thresholdImg(imgCut, self.listThreshold[self.danger])
 
-        # cv.imshow("Th", thresh)
+        #cv.imshow("Th", thresh)
         # Identify block of pixel with the almost same color of grey
         labels = measure.label(thresh, connectivity=2, background=255)
         # Create a black mask
@@ -120,7 +123,7 @@ class DetectObstacle():
 
         # Print 'DANGER' for 50 frame after have seen a danger block
         # NOTE: the value 50 is to change depending of the power of the computer
-        if (self.count > 20) and (self.danger > 0):
+        if (self.count > 30) and (self.danger > 0):
             self.danger = 0
             self.keypoint = []
 
@@ -129,7 +132,7 @@ class DetectObstacle():
         if self.danger > 0:
             font = cv.FONT_HERSHEY_SIMPLEX
             cv.putText(img,"Danger",(260,20), font, .5,self.color[self.danger],2,cv.LINE_AA)
-        # cv.imshow("Depth danger", img)
+        #cv.imshow("Depth danger", img)
 
         return self.keypoint
 

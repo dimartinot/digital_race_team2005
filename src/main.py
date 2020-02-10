@@ -55,8 +55,9 @@ def imageCallback(msg):
         sign_direction = sign_detect.main(cv_image)
         decision = inters_detect.main(cv_image, sign_direction)
         #if count % 10 == 0:
-        cv2.imshow("View", cv_image)
+        #cv2.imshow("View", cv_image)
         #    cv2.waitKey(1)
+
         detect.update(cv_image,count)
         
         if decision:
@@ -72,40 +73,34 @@ def imageCallback(msg):
             40
             )
         count += 1
-    
+
     except CvBridgeError as e:
         print("Could not convert to bgr8: {}".format(e))
 
 
 def videoProcess(msg):
-    global depth_created
+
+    np_arr = np.fromstring(msg.data, np.uint8)
+    cv_image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+
+    #outimage = border_detect.main(cv_image)
+
+    #cv2.imshow("Processed", outimage)
+    # cv2.imshow("Left", left)
+    # cv2.imshow("Right", right)        
+    cv2.imshow("Depth", cv_image)
+    # detect.update(frame)
+    # sign_detect.main(frame)
+    #cv2.waitKey(1)
     
-    if depth_created == False:
+    gray = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
+    #cv2.imshow("Depth", gray)
+    pos_keypoint = obstacle_detect.main(gray)
+    #detect.pos_obstacle = pos_keypoint
+    
+    #if pos_keypoint != []:
+    #    car.obstacle(pos_keypoint)
 
-        # cv2.namedWindow("Depth")
-        depth_created = True
-
-    else:
-
-        np_arr = np.fromstring(msg.data, np.uint8)
-        cv_image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
-
-        outimage = border_detect.main(cv_image)
-
-        cv2.imshow("Processed", outimage)
-        # cv2.imshow("Left", left)
-        # cv2.imshow("Right", right)        
-        # cv2.imshow("Depth", cv_image)
-        # detect.update(frame)
-        # sign_detect.main(frame)
-        cv2.waitKey(1)
-        
-        gray = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
-        detect.pos_obstacle = obstacle_detect.main(gray)
-        """
-        if pos_keypoint != []:
-            car.obstacle(pos_keypoint)
-        """
 def listener():
 
     # In ROS, nodes are uniquely named. If two nodes with the same
@@ -123,7 +118,7 @@ def listener():
 
     if (stream):
         print("setting subscriber")
-        # rospy.Subscriber("team2005/camera/rgb/compressed", CompressedImage, imageCallback)
+        rospy.Subscriber("team2005/camera/rgb/compressed", CompressedImage, imageCallback)
         rospy.Subscriber("team2005/camera/depth/compressed", CompressedImage, videoProcess)
 
         rospy.spin()

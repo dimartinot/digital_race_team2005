@@ -81,7 +81,7 @@ class DetectLane():
                 cv2.circle(lane, (int(self.rightLane[i][0]), int(self.rightLane[i][1])), 1, (255,0,0), 2, 8, 0)
 
         
-       # cv2.imshow("Lane Detect", lane)
+        #cv2.imshow("Lane Detect", lane)
         
         
 
@@ -93,8 +93,8 @@ class DetectLane():
             minThreshold[0:3],
             maxThreshold[0:3]
         )
-        if self.pos_obstacle != []:
-            cv2.circle(imgThresholded, (int(self.pos_obstacle.pt[0]) +30,int(self.pos_obstacle.pt[0])), 25, (255,255,255),cv2.FILLED, 1)
+        #if self.pos_obstacle != []:
+        #    cv2.circle(imgThresholded, (int(self.pos_obstacle.pt[0])-10,int(self.pos_obstacle.pt[1])+10), 20, (255,255,255),cv2.FILLED, 1)
 
         dst = self.BIRDVIEWTranform(imgThresholded)
         #dst = cv2.cvtColor(dst, cv2.COLOR_BGR2GRAY)
@@ -105,7 +105,7 @@ class DetectLane():
         #cv2.waitKey(0)
         self.fillLane(dst)
         # cv2.imshow("Binary", imgThresholded)
-        cv2.waitKey(10)
+        #cv2.waitKey(10)
 
         return dst
 
