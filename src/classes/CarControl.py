@@ -31,8 +31,9 @@ class CarControl():
 
     def __init__(self):
 
-        self.step_turn = 26
-        self.max_step = 25
+        
+        self.max_step = 30
+        self.step_turn = self.max_step +1
         self.direction = None
 
         self.carPos = cv2.KeyPoint(

@@ -36,7 +36,7 @@ class DetectObstacle():
             #print(numPixels)
             
             # Filter the labels with their size
-            if numPixels > 150 and numPixels < 1000:
+            if numPixels > 100 and numPixels < 1000:
                 ### This labelMask is the danger block of the car !
                 mask = cv.add(mask, labelMask)
                 if self.danger == 0:

@@ -7,7 +7,7 @@ class DetectIntersection():
         # Number of frame without sign needed to turn
 
         #### Default ####
-        self.threshold = 12
+        self.threshold = 6 #12
         #################
         
         ###### New ######

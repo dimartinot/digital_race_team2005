@@ -63,17 +63,22 @@ def imageCallback(msg):
         # TODO:
 
         if decision:
+            print('Turn')
             car.step_turn = 0
             car.direction = decision
 
         if car.step_turn <= car.max_step:
             car.turnHere()
         else:
+            left_lane = detect.getLeftLane()
+            right_lane = detect.getRightLane()
+
+
             car.driverCar(
-                detect.getLeftLane(),
-                detect.getRightLane(),
-                40
-            )
+            left_lane,
+            right_lane,
+            40)
+            
         count += 1
 
     except CvBridgeError as e:

@@ -24,6 +24,30 @@ skipFrame = 1
 def to_pass(x):
     pass
 
+def average_lane(memory, input_):
+
+    tmp = memory
+    tmp.append(input_)
+    means = []
+    for x in range(len(tmp[0])):
+        res = [0,0]
+        count = 0
+        if input_[x] != None or memory[0][x] != None:
+            for y in range(len(tmp)):
+                if tmp[y][x]!=None:
+                    res[0] += tmp[y][x][0]
+                    res[1] += tmp[y][x][1]
+                    count += 1
+        
+        if count>0:
+            res[0]/=count
+            res[1]/=count
+        else: 
+            res = None
+
+        means.append(res)
+    return(means)
+
 class DetectLane():
 
     def __init__(self):
@@ -36,6 +60,9 @@ class DetectLane():
         self.leftLane = []
         self.rightLane = []
         self.pos_obstacle = []
+        self.memory_lane_left  = [[None]*32]*3
+        self.memory_lane_right = [[None]*32]*3
+        
 
     def createTrackbars(self):
         cv2.createTrackbar("LowH", "Threshold", minThreshold[0], 179, to_pass)
@@ -63,6 +90,60 @@ class DetectLane():
         points1 = self.centerRoadSide(layers1, self.VERTICAL)
 
         self.detectLeftRight(points1)
+        
+        ####
+        left_lane = self.getLeftLane()
+        right_lane = self.getRightLane()
+
+        len_left = len(np.where(np.array(left_lane) != None)[0])
+        len_right = len(np.where(np.array(right_lane) != None)[0])
+
+
+        # lane = np.zeros(img.shape, dtype=np.uint8)
+
+        # lane = cv2.cvtColor(lane, cv2.COLOR_GRAY2BGR)
+        
+        # for i in range(1, len(self.leftLane)):
+        #     if (self.leftLane[i] != None):
+        #         cv2.circle(lane, (int(self.leftLane[i][0]), int(self.leftLane[i][1])), 1, (0,0,255), 2, 8, 0)
+
+        # for i in range(1, len(self.rightLane)):
+        #     if (self.rightLane[i] != None):
+        #         cv2.circle(lane, (int(self.rightLane[i][0]), int(self.rightLane[i][1])), 1, (255,0,0), 2, 8, 0)
+
+        
+        # cv2.imshow("Lane Detect brut", lane)
+
+        ### CLONE LANE
+        if len_left >= len_right + 6:
+            self.rightLane = [[e[0]+60, e[1]] if e != None else None for e in left_lane]
+
+        elif len_right >= len_left + 6:
+            self.leftLane = [[e[0]-60, e[1]] if e != None else None for e in right_lane]
+
+        # lane = np.zeros(img.shape, dtype=np.uint8)
+
+        # lane = cv2.cvtColor(lane, cv2.COLOR_GRAY2BGR)
+
+        # for i in range(1, len(self.leftLane)):
+        #     if (self.leftLane[i] != None):
+        #         cv2.circle(lane, (int(self.leftLane[i][0]), int(self.leftLane[i][1])), 1, (0,0,255), 2, 8, 0)
+
+        # for i in range(1, len(self.rightLane)):
+        #     if (self.rightLane[i] != None):
+        #         cv2.circle(lane, (int(self.rightLane[i][0]), int(self.rightLane[i][1])), 1, (255,0,0), 2, 8, 0)
+        
+        # cv2.imshow("Lane Detect pre", lane)
+
+
+        ### AVERAGE LANES
+        # self.rightLane = average_lane(self.memory_lane_right, self.rightLane)
+        # self.leftLane = average_lane(self.memory_lane_left, self.leftLane)
+        
+        # self.memory_lane_left = [self.leftLane, self.memory_lane_left[0], self.memory_lane_left[1]]
+        # self.memory_lane_right = [self.rightLane, self.memory_lane_right[0], self.memory_lane_right[1]]
+
+        ####
 
         self.BIRDVIEW = np.zeros(img.shape, dtype=np.uint8)
         lane = np.zeros(img.shape, dtype=np.uint8)
@@ -86,27 +167,36 @@ class DetectLane():
                 cv2.circle(lane, (int(self.rightLane[i][0]), int(self.rightLane[i][1])), 1, (255,0,0), 2, 8, 0)
 
         
-        cv2.imshow("Lane Detect", lane)
+        cv2.imshow("Lane Detect post", lane)
         
-        
+    
+    
+
 
     def preProcess(self, src, count):
 
         imgHSV = cv2.cvtColor(src, cv2.COLOR_BGR2HSV)
+        
         imgThresholded = cv2.inRange(
             imgHSV,
             minThreshold[0:3],
             maxThreshold[0:3]
         )
+        # imgThresholded = cv2.GaussianBlur(imgThresholded,(11,11),0)
         if self.pos_obstacle != []:
-            cv2.circle(imgThresholded, (int(self.pos_obstacle.pt[0]),int(self.pos_obstacle.pt[1])+10), 20, (255,255,255),cv2.FILLED, 1)
+            cv2.circle(imgThresholded, (int(self.pos_obstacle.pt[0]),int(self.pos_obstacle.pt[1])+10), 10, (255,255,255),cv2.FILLED, 1)
 
         dst = self.BIRDVIEWTranform(imgThresholded)
+
+        # 
+        # dst[:, :40] = 0
+        # dst[:, -110:] = 0
+        #
+
         #dst = cv2.cvtColor(dst, cv2.COLOR_BGR2GRAY)
         #if count % 10 == 0:
         
         cv2.imshow("Bird View", dst)
-        
         #cv2.waitKey(0)
         self.fillLane(dst)
         # cv2.imshow("Binary", imgThresholded)
