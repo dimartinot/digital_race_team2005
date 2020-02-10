@@ -38,12 +38,12 @@ class DetectBorder():
                         frame[i][j] = 0
         return(frame)
 
-    def birdViewTransform(self, src):
+    def birdViewTransform(self, src, skyLine):
         height, width = src.shape
 
         src_vertices = np.array([
-            [0, self.skyLine],
-            [width, self.skyLine],
+            [0, skyLine],
+            [width, skyLine],
             [width, height],
             [0, height]
         ], dtype="float32")
@@ -215,12 +215,16 @@ class DetectBorder():
                 if (pointMap[i][j] > max1):
                     max1 = pointMap[i][j]
                     posMax = cv2.KeyPoint(i, j, _size=0)
+                
+                else:
+                    posMax = None
 
         for i in range(points.shape[0]):
             for j in range(len(points[i])):
-                if (pointMap[i][j] > max2 and (i != posMax.pt[0] or j != posMax.pt[1]) and postPoint[i][j] == -1): #FIXME "local variable 'posMax' referenced before assignment" possible
-                    max2 = pointMap[i][j]
-                    posMax2 = cv2.KeyPoint(i, j, _size=0)
+                if posMax:
+                    if (pointMap[i][j] > max2 and (i != posMax.pt[0] or j != posMax.pt[1]) and postPoint[i][j] == -1): #FIXME "local variable 'posMax' referenced before assignment" possible
+                        max2 = pointMap[i][j]
+                        posMax2 = cv2.KeyPoint(i, j, _size=0)
 
 
 
@@ -314,16 +318,20 @@ class DetectBorder():
 
         heigh = copy.shape[0]
 
-        copy = copy[int(heigh/4):]
+        copy = copy[int(heigh/2):]
 
         copy = cv2.cvtColor(copy, cv2.COLOR_RGB2GRAY)
 
         copy = self.threshold(copy)
         copy = cv2.bitwise_not(copy)
 
-        copy = cv2.resize(copy, dsize=(320, 240), interpolation=cv2.INTER_CUBIC)
-        
-        bird_view = self.birdViewTransform(copy)
+        # cv2.imshow("Test", copy)
+
+        full_image = np.append(np.zeros((int(heigh/2), copy.shape[1]), dtype=np.uint8), copy, axis=0)
+
+        # copy = cv2.resize(copy, dsize=(320, 240), interpolation=cv2.INTER_CUBIC)
+
+        bird_view = self.birdViewTransform(full_image, 85)
 
         #cv2.imshow("Bird View", bird_view)
 

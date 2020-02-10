@@ -103,7 +103,7 @@ class CarControl():
             
             if abs(error)>20:
                 error = 0
-            print(error)  
+            #print(error)  
             self.steer_publisher.publish(std_msgs.msg.Float32(error))
             self.speed_publisher.publish(std_msgs.msg.Float32(velocity))
 

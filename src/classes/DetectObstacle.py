@@ -34,18 +34,16 @@ class DetectObstacle():
             # Count the nb of whith pixel
             numPixels = cv.countNonZero(labelMask)
             #print(numPixels)
-            if numPixels > 50 and numPixels < 1000:
-                print(numPixels)
             
             # Filter the labels with their size
-            if numPixels > 110 and numPixels < 1000:
+            if numPixels > 150 and numPixels < 1000:
                 ### This labelMask is the danger block of the car !
                 mask = cv.add(mask, labelMask)
                 if self.danger == 0:
                     self.count = 0
                 self.danger += 1
                 
-                print("DANGER")
+                print('DANGER')
 
         return mask
 
@@ -67,8 +65,7 @@ class DetectObstacle():
 
         # Increment the number of frame
         self.count +=1
-        #print(self.count)
-        #print(self.danger)
+
 
         # Cut the border of the frame
         img[np.where(img == [0])] = [255]
@@ -76,10 +73,10 @@ class DetectObstacle():
         
         imgCut[0:self.height, 0:self.width/5] = 0 #Left
         imgCut[0:self.height, (4*self.width/5):self.width] = 0 #Right
-        imgCut[0:13*self.height/48, 0:self.width] = 0 #Top
+        imgCut[0:self.height/6, 0:self.width] = 0 #Top
         imgCut[(3*self.height/4):self.height, 0:self.width] = 0 #Bottom
 
-        # cv.imshow("ImageCut", imgCut)
+        #cv.imshow("ImageCut", imgCut)
 
         # Applay the threshold on the cut frame
         thresh = self.thresholdImg(imgCut, self.listThreshold[self.danger])
@@ -123,7 +120,7 @@ class DetectObstacle():
 
         # Print 'DANGER' for 50 frame after have seen a danger block
         # NOTE: the value 50 is to change depending of the power of the computer
-        if (self.count > 30) and (self.danger > 0):
+        if (self.count > 50) and (self.danger > 0):
             self.danger = 0
             self.keypoint = []
 

@@ -55,11 +55,13 @@ def imageCallback(msg):
         sign_direction = sign_detect.main(cv_image)
         decision = inters_detect.main(cv_image, sign_direction)
         #if count % 10 == 0:
-        #cv2.imshow("View", cv_image)
-        #    cv2.waitKey(1)
+        cv2.imshow("View", cv_image)
+        cv2.waitKey(1)
 
         detect.update(cv_image,count)
         
+        # TODO:
+
         if decision:
             car.step_turn = 0
             car.direction = decision
@@ -68,9 +70,9 @@ def imageCallback(msg):
             car.turnHere()
         else:
             car.driverCar(
-            detect.getLeftLane(),
-            detect.getRightLane(),
-            40
+                detect.getLeftLane(),
+                detect.getRightLane(),
+                40
             )
         count += 1
 
@@ -85,22 +87,24 @@ def videoProcess(msg):
 
     #outimage = border_detect.main(cv_image)
 
-    #cv2.imshow("Processed", outimage)
+    # cv2.imshow("Processed", outimage)
     # cv2.imshow("Left", left)
     # cv2.imshow("Right", right)        
-    cv2.imshow("Depth", cv_image)
+    # cv2.imshow("Depth", cv_image)
     # detect.update(frame)
     # sign_detect.main(frame)
-    #cv2.waitKey(1)
     
     gray = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
-    #cv2.imshow("Depth", gray)
-    pos_keypoint = obstacle_detect.main(gray)
-    #detect.pos_obstacle = pos_keypoint
-    
-    #if pos_keypoint != []:
-    #    car.obstacle(pos_keypoint)
-
+    detect.pos_obstacle = obstacle_detect.main(gray)
+    """
+    if pos_keypoint != []:
+        car.obstacle(pos_keypoint)
+    """
+    # car.driverCar(
+    #     border_detect.getLeftLane(),
+    #     border_detect.getRightLane(),
+    #     40
+    # )
 def listener():
 
     # In ROS, nodes are uniquely named. If two nodes with the same
@@ -111,7 +115,7 @@ def listener():
     print("launching listener")
     rospy.init_node('image_listener', anonymous=True)
 
-    # detect = DetectLane()
+    detect = DetectLane()
     sign_detect = DetectSign()
     car = CarControl()
     obstacle_detect = DetectObstacle()

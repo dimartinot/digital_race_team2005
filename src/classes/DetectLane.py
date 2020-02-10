@@ -1,9 +1,14 @@
 import numpy as np
 import cv2
 
-
+# lines
 minThreshold = np.array([0, 0, 210])
 maxThreshold = np.array([179, 255, 255])
+
+# borders
+# minThreshold = np.array([0,58,226])
+# maxThreshold = np.array([255,84,255])
+
 minShadowTh = np.array([90, 43, 36])
 maxShadowTh = np.array([120, 81, 171])
 minLaneInShadow = np.array([90, 43, 97])
@@ -81,7 +86,7 @@ class DetectLane():
                 cv2.circle(lane, (int(self.rightLane[i][0]), int(self.rightLane[i][1])), 1, (255,0,0), 2, 8, 0)
 
         
-        #cv2.imshow("Lane Detect", lane)
+        cv2.imshow("Lane Detect", lane)
         
         
 
@@ -93,14 +98,14 @@ class DetectLane():
             minThreshold[0:3],
             maxThreshold[0:3]
         )
-        #if self.pos_obstacle != []:
-        #    cv2.circle(imgThresholded, (int(self.pos_obstacle.pt[0])-10,int(self.pos_obstacle.pt[1])+10), 20, (255,255,255),cv2.FILLED, 1)
+        if self.pos_obstacle != []:
+            cv2.circle(imgThresholded, (int(self.pos_obstacle.pt[0]),int(self.pos_obstacle.pt[1])+10), 20, (255,255,255),cv2.FILLED, 1)
 
         dst = self.BIRDVIEWTranform(imgThresholded)
         #dst = cv2.cvtColor(dst, cv2.COLOR_BGR2GRAY)
         #if count % 10 == 0:
         
-        #cv2.imshow("Bird View", dst)
+        cv2.imshow("Bird View", dst)
         
         #cv2.waitKey(0)
         self.fillLane(dst)
@@ -278,7 +283,7 @@ class DetectLane():
                         if (abs(x_m - x) < dis and abs(y_m - y) < err):
                             err = abs(x_m - x)
 
-                            pointMap[i][j] = pointMap[i + m][k] + 1;
+                            pointMap[i][j] = pointMap[i + m][k] + 1
                             prePoint[i][j] = k
                             postPoint[i + m][k] = j
                             check = True
