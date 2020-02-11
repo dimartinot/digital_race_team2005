@@ -2,7 +2,7 @@ FROM dungpb/dira_ros:ros-python
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
-    python-pip
+    python-pip python-tk
 
 RUN /bin/bash -c 'cd /catkin_ws/src; mkdir team2005'
 
