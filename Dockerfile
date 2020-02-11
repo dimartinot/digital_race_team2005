@@ -1,4 +1,4 @@
-FFROM dungpb/dira_ros:ros-python
+FROM dungpb/dira_ros:ros-python
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
