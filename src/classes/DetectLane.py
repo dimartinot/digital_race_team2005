@@ -197,7 +197,7 @@ class DetectLane():
                 cv2.circle(lane, (int(self.rightLane[i][0]), int(self.rightLane[i][1])), 1, (255,0,0), 2, 8, 0)
 
         
-        cv2.imshow("Lane Detect post", lane)
+        # cv2.imshow("Lane Detect post", lane)
         
     
     
@@ -226,7 +226,7 @@ class DetectLane():
         #dst = cv2.cvtColor(dst, cv2.COLOR_BGR2GRAY)
         #if count % 10 == 0:
         
-        cv2.imshow("Bird View", dst)
+        # cv2.imshow("Bird View", dst)
         #cv2.waitKey(0)
         self.fillLane(dst)
         # cv2.imshow("Binary", imgThresholded)
