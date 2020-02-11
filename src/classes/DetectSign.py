@@ -10,18 +10,18 @@ class DetectSign():
         self.blobparams.maxArea = 400
 
         #### Default ####
-        self.blobparams.filterByInertia = False
-        self.blobparams.filterByCircularity = False
+        # self.blobparams.filterByInertia = False
+        # self.blobparams.filterByCircularity = False
         #################
 
         ###### New ######
-        # self.blobparams.filterByCircularity = True
-        # self.blobparams.minCircularity = 0.4
-        # self.blobparams.maxCircularity = 1
+        self.blobparams.filterByCircularity = True
+        self.blobparams.minCircularity = 0.6
+        self.blobparams.maxCircularity = 1
 
-        # self.blobparams.filterByInertia=True
-        # self.blobparams.minInertiaRatio=0.4
-        # self.blobparams.maxInertiaRatio=1
+        self.blobparams.filterByInertia=True
+        self.blobparams.minInertiaRatio=0.4
+        self.blobparams.maxInertiaRatio=1
         #################
 
         self.blobparams.filterByConvexity=False

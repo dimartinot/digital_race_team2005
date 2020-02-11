@@ -36,13 +36,13 @@ def imageCallback(msg):
     global count
     if trackbar_created == False:
         count = 0
-        # cv2.namedWindow("Threshold")
+        cv2.namedWindow("Threshold")
         # cv2.namedWindow("View")
         # cv2.namedWindow("Binary")
         # cv2.namedWindow("Bird View")
         # cv2.namedWindow("Lane Detect")
 
-        # detect.createTrackbars()
+        detect.createTrackbars()
         #sign_detect.createTrackbars()
         trackbar_created = True
     try:

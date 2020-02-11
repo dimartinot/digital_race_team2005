@@ -2,8 +2,8 @@ import numpy as np
 import cv2
 
 # lines
-minThreshold = np.array([0, 0, 210])
-maxThreshold = np.array([179, 255, 255])
+minThreshold = np.array([35, 0, 184])
+maxThreshold = np.array([179, 31, 255])
 
 # borders
 # minThreshold = np.array([0,58,226])
@@ -62,17 +62,47 @@ class DetectLane():
         self.pos_obstacle = []
         self.memory_lane_left  = [[None]*32]*3
         self.memory_lane_right = [[None]*32]*3
-        
+    
+
+    def updatelB(self, value):
+        global minThreshold
+        minThreshold[0]=value
+        return
+
+    def updatelG(self, value):
+        global minThreshold
+        minThreshold[1]=value
+        return
+
+    def updatelR(self, value):
+        global minThreshold
+        minThreshold[2]=value
+        return
+
+    def updatehB(self, value):
+        global maxThreshold
+        maxThreshold[0]=value
+        return
+
+    def updatehG(self, value):
+        global maxThreshold
+        maxThreshold[1]=value
+        return
+
+    def updatehR(self, value):
+        global maxThreshold
+        maxThreshold[2]=value
+        return
 
     def createTrackbars(self):
-        cv2.createTrackbar("LowH", "Threshold", minThreshold[0], 179, to_pass)
-        cv2.createTrackbar("HighH", "Threshold", maxThreshold[0], 179, to_pass)
+        cv2.createTrackbar("LowH", "Threshold", minThreshold[0], 179, self.updatelB)
+        cv2.createTrackbar("HighH", "Threshold", maxThreshold[0], 179, self.updatehB)
 
-        cv2.createTrackbar("LowS", "Threshold", minThreshold[1], 255, to_pass)
-        cv2.createTrackbar("HighS", "Threshold", maxThreshold[1], 255, to_pass)
+        cv2.createTrackbar("LowS", "Threshold", minThreshold[1], 255, self.updatelG)
+        cv2.createTrackbar("HighS", "Threshold", maxThreshold[1], 255, self.updatehG)
 
-        cv2.createTrackbar("LowV", "Threshold", minThreshold[2], 255, to_pass)
-        cv2.createTrackbar("HighV", "Threshold", maxThreshold[2], 255, to_pass)
+        cv2.createTrackbar("LowV", "Threshold", minThreshold[2], 255, self.updatelR)
+        cv2.createTrackbar("HighV", "Threshold", maxThreshold[2], 255, self.updatehR)
 
         cv2.createTrackbar("Shadow Param", "Threshold", shadowParam, 255, to_pass)
 
@@ -116,10 +146,10 @@ class DetectLane():
 
         ### CLONE LANE
         if len_left >= len_right + 6:
-            self.rightLane = [[e[0]+60, e[1]] if e != None else None for e in left_lane]
+            self.rightLane = [[e[0]+35, e[1]] if e != None else None for e in left_lane]
 
         elif len_right >= len_left + 6:
-            self.leftLane = [[e[0]-60, e[1]] if e != None else None for e in right_lane]
+            self.leftLane = [[e[0]-35, e[1]] if e != None else None for e in right_lane]
 
         # lane = np.zeros(img.shape, dtype=np.uint8)
 
@@ -184,7 +214,7 @@ class DetectLane():
         )
         # imgThresholded = cv2.GaussianBlur(imgThresholded,(11,11),0)
         if self.pos_obstacle != []:
-            cv2.circle(imgThresholded, (int(self.pos_obstacle.pt[0]),int(self.pos_obstacle.pt[1])+10), 10, (255,255,255),cv2.FILLED, 1)
+            cv2.circle(imgThresholded, (int(self.pos_obstacle.pt[0]),int(self.pos_obstacle.pt[1])+10), 17, (255,255,255),cv2.FILLED, 1)
 
         dst = self.BIRDVIEWTranform(imgThresholded)
 
